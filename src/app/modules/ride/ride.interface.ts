@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { Schema } from "mongoose";
 
 export interface IGeoPoint {
   type: "Point";
@@ -17,6 +18,7 @@ export interface IPlace {
   location: IGeoPoint;
   address?: string;
 }
+
 
 
 export interface IRide extends Document {

@@ -80,6 +80,7 @@ const getAllUsers = async () => {
         }
     };
 }
+
 export const UserService = {
     createUser,
     getAllUsers,

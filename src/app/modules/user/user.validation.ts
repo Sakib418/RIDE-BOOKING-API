@@ -1,26 +1,7 @@
 import z from "zod";
-import { DriverApprovalStatus, DriverOnlineStatus, IsActive, Role } from "./user.interface";
+import {  IsActive, Role } from "./user.interface";
 
 
-
-export const driverProfileZodSchema = z.object({
-  licenseNo: z.string().min(5, "License number is too short."),
-  vehicle: z.object({
-    make: z.string().min(2, "Vehicle make is required."),
-    model: z.string().min(2, "Vehicle model is required."),
-    plate: z.string().min(2, "Vehicle plate number is required."),
-  }),
-  approvalStatus: z.enum(Object.values(DriverApprovalStatus) as [string])
-    .default(DriverApprovalStatus.PENDING),
-  onlineStatus: z.enum(Object.values(DriverOnlineStatus) as [string])
-    .default(DriverOnlineStatus.OFFLINE)
-}).partial(); 
-
-
-export const riderProfileZodSchema = z.object({
-  rating: z.number().min(0).max(5).optional(),
-  totalRides: z.number().int().min(0).optional()
-}).partial();
 
 
 export const createUserZodSchema = z.object({
@@ -38,9 +19,7 @@ export const createUserZodSchema = z.object({
   address: z.string().max(200).optional(),
   role: z.enum(Object.values(Role) as [string]),
   isActive: z.enum(Object.values(IsActive) as [string]).optional(),
-  isVerified: z.boolean().optional(),
-  driverProfile: driverProfileZodSchema.optional(),
-  riderProfile: riderProfileZodSchema.optional(),
+  isVerified: z.boolean().optional()
 });
 
 
