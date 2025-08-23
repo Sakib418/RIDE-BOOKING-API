@@ -28,10 +28,7 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     const payload = req.body;
     const user = await UserService.updateUser(userId, payload, verifiedToken as JwtPayload)
 
-    // res.status(httpStatus.CREATED).json({
-    //     message: "User Created Successfully",
-    //     user
-    // })
+    
 
     sendResponse(res, {
         success: true,
@@ -40,7 +37,20 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
         data: user,
     })
 })
+const toggleUserStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.id;
+    
+    const verifiedToken = req.user;
 
+    const payload = req.body;
+    const user = await UserService.toggleUserStatus(userId, payload, verifiedToken as JwtPayload)
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: `User is now ${user?.isActive}`,
+        data: user,
+    })
+})
 const getAllUsers = catchAsync(async(req: Request, res: Response, next: NextFunction) =>{
    const result = await UserService.getAllUsers();
    
@@ -59,5 +69,6 @@ const getAllUsers = catchAsync(async(req: Request, res: Response, next: NextFunc
 export const UserControllers = {
     createUser,
     getAllUsers,
-    updateUser
+    updateUser,
+    toggleUserStatus
 }

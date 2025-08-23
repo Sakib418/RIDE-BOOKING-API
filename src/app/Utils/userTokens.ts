@@ -6,6 +6,12 @@ import { User } from "../modules/user/user.model";
 import httpStatus from "http-status-codes"
 import AppError from "../errorHandlers/AppError";
 
+// export interface JwtPayload {
+//   userId: string;
+//   email: string;
+//   role: "ADMIN" | "USER" | "RIDER" | "DRIVER" | "SUPER_ADMIN"; 
+// }
+
 export const createUserTokens = (user:  Partial<IUser>) => {
        
     const jwtPayload = {
@@ -39,7 +45,7 @@ export const createNewAccessTokenWithRefreshToken = async (refreshToken : string
     }
 
     
-    if(isUserExist.isActive === IsActive.BLOCKED || isUserExist.isActive === IsActive.INACTIVE){
+    if(isUserExist.isActive === IsActive.BLOCKED){
         throw new AppError(httpStatus.BAD_REQUEST, `User is ${isUserExist.isActive}`)
     }
      

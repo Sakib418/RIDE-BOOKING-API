@@ -5,8 +5,8 @@ export enum Role{
     RIDER="RIDER",
     DRIVER="DRIVER",
     ADMIN = "ADMIN",
-    USER = "USER",
-    GUIDE = "GUIDE",
+    USER = "USER"
+    
 }
 export interface IAuthProvider {
     provider: "google" | "credentials"; //"Google","Credential"
@@ -14,7 +14,6 @@ export interface IAuthProvider {
 }
 export enum IsActive {
     ACTIVE = "ACTIVE",
-    INACTIVE = "INACTIVE",
     BLOCKED = "BLOCKED"
 }
 
