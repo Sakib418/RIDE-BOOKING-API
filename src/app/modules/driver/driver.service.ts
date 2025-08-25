@@ -1,6 +1,10 @@
+import { Types } from "mongoose";
 import { QueryBuilder } from "../../Utils/QueryBuilder";
-import { DriverApprovalStatus, IDriverProfile } from "./driver.interfaces";
+import { RideStatus } from "../ride/ride.interface";
+import { Ride } from "../ride/ride.model";
+import { DriverApprovalStatus, DriverOnlineStatus, IDriverProfile } from "./driver.interfaces";
 import { Driver } from "./driver.model";
+import { JwtPayload } from "jsonwebtoken";
 
 
 const createDriverProfile = async (payload: IDriverProfile) => {
@@ -9,6 +13,9 @@ const createDriverProfile = async (payload: IDriverProfile) => {
 
     return driver;
 };
+
+
+
 
 const getAllDrivers = async (query: Record<string, string>) => {
 
@@ -47,9 +54,33 @@ const approveOrSuspendDriver = async (driverId: string, approvalStatus: DriverAp
     return updatedDriver;
 };
 
+export const setDriverStatus = async (decodedToken: JwtPayload, status: DriverOnlineStatus) => {
+  
+  const driver = await Driver.findById(decodedToken.userId);
+  if (!driver) throw new Error("Driver not found");
+
+  driver.onlineStatus = status;
+  await driver.save();
+
+  return driver;
+};
+
+export const getEarnings = async (decodedToken: JwtPayload) => {
+  const filter: any = { driver: decodedToken.userId, status: "COMPLETED" };
+  const rides = await Ride.find(filter);
+  const totalEarnings = rides.reduce((sum, r) => sum + r.fare, 0);
+
+  return {  data: rides,
+    meta: {
+       total: totalEarnings
+    }
+   };
+};
 
 export const DriverService = {
     createDriverProfile,
     getAllDrivers,
-    approveOrSuspendDriver
+    approveOrSuspendDriver,
+    setDriverStatus,
+    getEarnings
 };

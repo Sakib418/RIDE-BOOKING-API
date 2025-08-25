@@ -21,6 +21,8 @@ const driverSchema = new Schema(
       enum: Object.values(DriverOnlineStatus),
       default: DriverOnlineStatus.OFFLINE,
     },
+    
+    
   },
   { timestamps: true,
     versionKey: false

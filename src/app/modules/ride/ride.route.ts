@@ -8,10 +8,10 @@ import { createRideZodSchema } from "./ride.validation";
 
 const router = Router();
 
-router.get("/",checkAuth(Role.ADMIN,Role.SUPER_ADMIN), RideController.getAllRides);
+router.get("/me",checkAuth(Role.ADMIN,Role.SUPER_ADMIN,Role.DRIVER,Role.RIDER), RideController.getAllRides);
 
 router.post("/request",validateRequest(createRideZodSchema),checkAuth(...Object.values(Role)), RideController.requestRide);
-//router.get("/",checkAuth(Role.ADMIN,Role.SUPER_ADMIN), RideController.getAllRides);
+router.patch("/:rideId/status",checkAuth(Role.RIDER,Role.DRIVER), RideController.respondToRide);
 
 
 

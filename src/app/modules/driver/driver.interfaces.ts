@@ -18,4 +18,6 @@ export interface IDriverProfile {
   };
   approvalStatus: DriverApprovalStatus;
   onlineStatus: DriverOnlineStatus;
+           
+  
 }

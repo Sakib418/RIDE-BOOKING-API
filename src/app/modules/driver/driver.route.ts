@@ -28,6 +28,16 @@ router.patch(
   DriverController.approveOrSuspendDriver
 );
 
+router.patch(
+  "/status/:id",
+  checkAuth(Role.DRIVER),
+  DriverController.setDriverStatus
+);
 
+router.get(
+  "/earnings/:id",
+  checkAuth(Role.DRIVER),
+  DriverController.getEarnings
+);
 
 export const driversRoutes = router;

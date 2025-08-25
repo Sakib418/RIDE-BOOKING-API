@@ -19,6 +19,7 @@ const rideSchema = new Schema<IRide>({
   destination: { type: PlaceSchema, required: true },
   status: { type: String, enum: Object.values(RideStatus), default: RideStatus.REQUESTED },
   requestedAt: { type: Date, default: Date.now },
+  fare: { type: Number, required: true }, 
   acceptedAt: Date,
   pickedUpAt: Date,
   completedAt: Date,

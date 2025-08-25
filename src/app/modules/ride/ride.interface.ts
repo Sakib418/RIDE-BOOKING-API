@@ -13,6 +13,7 @@ export enum RideStatus {
   COMPLETED = "COMPLETED",
   CANCELED = "CANCELED",
   EXPIRED = "EXPIRED",
+  REJECTED =  "REJECTED",
 }
 export interface IPlace {
   location: IGeoPoint;
@@ -27,6 +28,7 @@ export interface IRide extends Document {
   pickup: IPlace;
   destination: IPlace;
   status: RideStatus;
+  fare: number; 
   requestedAt: Date;
   acceptedAt?: Date;
   pickedUpAt?: Date;

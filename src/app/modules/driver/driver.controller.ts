@@ -3,6 +3,7 @@ import { catchAsync } from "../../Utils/catchAsync";
 import { sendResponse } from "../../Utils/sendResponse";
 import { DriverService } from "./driver.service";
 import { DriverApprovalStatus } from "./driver.interfaces";
+import { JwtPayload } from "jsonwebtoken";
 
 
 const createDriverProfile = catchAsync(async (req: Request, res: Response) => {
@@ -48,10 +49,41 @@ const approveOrSuspendDriver = catchAsync(async (req: Request, res: Response) =>
     });
 });
 
+export const setDriverStatus = async (req: Request, res: Response) => {
+
+  const decodedToken = req.user;
+  const { status } = req.body;
+  
+   const driver = await DriverService.setDriverStatus(decodedToken as JwtPayload, status);
+  sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: `Driver has been updated successfully`,
+        data: driver,
+    });
+  
+};
+
+export const getEarnings = async (req: Request, res: Response) => {
+
+  const decodedToken = req.user;
+  
+   const result = await DriverService.getEarnings(decodedToken as JwtPayload);
+  sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: `Driver has been updated successfully`,
+        data: result.data,
+        meta: result.meta
+    });
+  
+};
 
 
 export const DriverController ={
     createDriverProfile,
     getAllDrivers,
-    approveOrSuspendDriver
+    approveOrSuspendDriver,
+    setDriverStatus,
+    getEarnings
 }
