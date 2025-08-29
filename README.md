@@ -20,80 +20,77 @@ Key features:
 - npm or yarn
 - Postman or API testing tool
 
-### Installation
-1. Clone the repository:
+# Setup & Installation
+
 ```bash
 git clone https://github.com/<your-username>/ride-management-api.git
 cd ride-management-api
-
-```npm install
+npm install
 # or
-```yarn install
+yarn install
 
 ### Setup environment variables
-
-Create a .env file in the root directory and add:
-
-/*
-i = 5000
+PORT=5000
 DB_URL=mongodb+srv://UserName:Password@cluster0.aine5.mongodb.net/example-db?retryWrites=true&w=majority&appName=Cluster0
 NODE_ENV=development
 
 # JWT
-JWT_ACCESS_SECRET = access_secret
-JWT_ACCESS_EXPIRES = 1d
-JWT_REFRESH_SECRET=JWT_REFRESH_SECRET
+JWT_ACCESS_SECRET=access_secret
+JWT_ACCESS_EXPIRES=1d
+JWT_REFRESH_SECRET=refresh_secret
 JWT_REFRESH_EXPIRES=30d
+
 # BCRYPT
-BCRYPT_SALT_ROUND = round number
+BCRYPT_SALT_ROUND=10
 
 # SUPER ADMIN
 SUPER_ADMIN_EMAIL=example@gmail.com
 SUPER_ADMIN_PASSWORD=examplePassword
 
+# Google OAuth
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_CALLBACK_URL=your_callback_url
 
-# Google
-#  Check in passport.ts file form clientid and secret
-GOO0GLE_CLIENT_SECRET = Need to fill
-GO0OGLE_CLIENT_ID = Need to fill
-GO0OGLE_CALLBACK_URL= Need to fill
-
-#Express Session
+# Express Session
 EXPRESS_SESSION_SECRET=express-session
 
-#FRONEND URL
-FRONEND_URL=http://localhost:5173
+# Frontend URL
+FRONTEND_URL=http://localhost:5173
+
 
 ## API Endpoints Summary and In project you can find postman api collection.
+| Method | Endpoint        | Role   | Description                   |
+| ------ | --------------- | ------ | ----------------------------- |
+| POST   | /users/register | Public | Register a new user           |
+| POST   | /auth/login     | Public | Login user and get JWT tokens |
 
-### Authentication
-| Method | Endpoint        | Role   | Description                       |
-|--------|----------------|--------|-----------------------------------|
-| POST   | /users/register | Public | Register a new user               |
-| POST   | /auth/login     | Public | Login user and get JWT tokens     |
 
 ### Admins
-| Method | Endpoint                  | Role  | Description                          |
-|--------|---------------------------|-------|--------------------------------------|
-| GET    | /users                    | Admin | View all users                        |
-| GET    | /drivers                  | Admin | View all drivers                      |
-| GET    | /rides/me                 | Admin | View all rides                         |
-| PATCH  | /drivers/approve/:id      | Admin | Approve or suspend drivers            |
-| PATCH  | /users/block/:id          | Admin | Block or unblock user accounts        |
+| Method | Endpoint              | Role  | Description                    |
+| ------ | --------------------- | ----- | ------------------------------ |
+| GET    | /users                | Admin | View all users                 |
+| GET    | /drivers              | Admin | View all drivers               |
+| GET    | /rides/me             | Admin | View all rides                 |
+| PATCH  | /drivers/approve/\:id | Admin | Approve or suspend drivers     |
+| PATCH  | /users/block/\:id     | Admin | Block or unblock user accounts |
+
 
 ### Drivers
-| Method | Endpoint                  | Role    | Description                            |
-|--------|---------------------------|---------|----------------------------------------|
-| PATCH  | /rides/:id/status         | Driver  | Accept/reject ride requests, update ride status |
-| GET    | /drivers/earnings/:id     | Driver  | View earnings history                  |
-| PATCH  | /drivers/status           | Driver  | Set availability status                |
+| Method | Endpoint               | Role   | Description                                     |
+| ------ | ---------------------- | ------ | ----------------------------------------------- |
+| PATCH  | /rides/\:id/status     | Driver | Accept/reject ride requests, update ride status |
+| GET    | /drivers/earnings/\:id | Driver | View earnings history                           |
+| PATCH  | /drivers/status        | Driver | Set availability status                         |
+
 
 ### Rides
-| Method | Endpoint                  | Role   | Description                                         |
-|--------|---------------------------|--------|-----------------------------------------------------|
-| POST   | /rides/request            | Rider  | Request a ride with pickup & destination locations (lat & lng) |
-| PATCH  | /rides/:id/status         | Rider  | Cancel a ride                                      |
-| GET    | /rides/me                 | Rider  | View ride history                                  |
+| Method | Endpoint           | Role  | Description                                                    |
+| ------ | ------------------ | ----- | -------------------------------------------------------------- |
+| POST   | /rides/request     | Rider | Request a ride with pickup & destination locations (lat & lng) |
+| PATCH  | /rides/\:id/status | Rider | Cancel a ride                                                  |
+| GET    | /rides/me          | Rider | View ride history                                              |
+                      |
 
 
 ### Notes
