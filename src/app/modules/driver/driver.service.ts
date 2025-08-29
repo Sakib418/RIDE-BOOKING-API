@@ -5,7 +5,9 @@ import { Ride } from "../ride/ride.model";
 import { DriverApprovalStatus, DriverOnlineStatus, IDriverProfile } from "./driver.interfaces";
 import { Driver } from "./driver.model";
 import { JwtPayload } from "jsonwebtoken";
-
+import httpStatus from 'http-status-codes';
+import AppError from "../../errorHandlers/AppError";
+import { User } from "../user/user.model";
 
 const createDriverProfile = async (payload: IDriverProfile) => {
     
@@ -55,9 +57,21 @@ const approveOrSuspendDriver = async (driverId: string, approvalStatus: DriverAp
 };
 
 export const setDriverStatus = async (decodedToken: JwtPayload, status: DriverOnlineStatus) => {
-  
-  const driver = await Driver.findById(decodedToken.userId);
-  if (!driver) throw new Error("Driver not found");
+   
+     const ifUserExist = await User.findById(decodedToken.userId);
+   
+        
+   if (!ifUserExist) {
+     throw new AppError(httpStatus.NOT_FOUND, "Driver not found");
+   }  
+
+   const driver = await Driver.findOne({user: decodedToken.userId});
+
+    if (!driver) {
+    throw new AppError(httpStatus.NOT_FOUND, "Driver profile not created yet!! Please create driver profile..");
+    }  
+    
+    
 
   driver.onlineStatus = status;
   await driver.save();

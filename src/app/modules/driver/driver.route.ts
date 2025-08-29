@@ -14,7 +14,7 @@ router.get("/",checkAuth(Role.ADMIN,Role.SUPER_ADMIN), DriverController.getAllDr
 
 router.post(
     "/create/:id",
-    checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN,Role.DRIVER),
     validateRequest(createDriverProfileZodSchema),
     DriverController.createDriverProfile
 );
@@ -29,7 +29,7 @@ router.patch(
 );
 
 router.patch(
-  "/status/:id",
+  "/status",
   checkAuth(Role.DRIVER),
   DriverController.setDriverStatus
 );

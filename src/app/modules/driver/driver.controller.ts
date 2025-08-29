@@ -72,7 +72,7 @@ export const getEarnings = async (req: Request, res: Response) => {
   sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: `Driver has been updated successfully`,
+        message: `Driver earning total retrived successfully`,
         data: result.data,
         meta: result.meta
     });

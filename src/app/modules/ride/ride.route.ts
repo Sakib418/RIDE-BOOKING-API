@@ -11,7 +11,7 @@ const router = Router();
 router.get("/me",checkAuth(Role.ADMIN,Role.SUPER_ADMIN,Role.DRIVER,Role.RIDER), RideController.getAllRides);
 
 router.post("/request",validateRequest(createRideZodSchema),checkAuth(...Object.values(Role)), RideController.requestRide);
-router.patch("/:rideId/status",checkAuth(Role.RIDER,Role.DRIVER), RideController.respondToRide);
+router.patch("/:id/status",checkAuth(Role.RIDER,Role.DRIVER,Role.ADMIN), RideController.respondToRide);
 
 
 

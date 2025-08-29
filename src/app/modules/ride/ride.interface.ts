@@ -12,7 +12,6 @@ export enum RideStatus {
   IN_TRANSIT = "IN_TRANSIT",
   COMPLETED = "COMPLETED",
   CANCELED = "CANCELED",
-  EXPIRED = "EXPIRED",
   REJECTED =  "REJECTED",
 }
 export interface IPlace {
