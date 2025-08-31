@@ -9,6 +9,7 @@ Key features:
 - Driver approval management
 - Rider ride cancellation
 - Admin overrides for ride management
+- Based on lat and lng of pickup and destination location automatic fare calculation
 
 ---
 
