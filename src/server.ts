@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import app from "./app";
 import { envVars } from "./app/config/env";
 import { seedSuperAdmin } from "./app/Utils/seedSuperAdmin";
+import { startRideCleanupJob } from "./app/jobs/rideCleanup";
 
 let server : Server;
 
@@ -14,6 +15,9 @@ const startServer = async () => {
          await mongoose.connect(envVars.DB_URL)
 
 console.log("Connected to DB");
+
+ // Start cron job
+  startRideCleanupJob();
 
 server = app.listen(envVars.PORT, () => {
     console.log(`Server is listening to post ${envVars.PORT}`)

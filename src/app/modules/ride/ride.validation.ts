@@ -46,5 +46,6 @@ export const updateRideZodSchema = z.object({
   pickedUpAt: z.date().optional(),
   completedAt: z.date().optional(),
   canceledAt: z.date().optional(),
+  cancelReason: z.string().optional(),
   fare: z.number().positive().optional(),
 });

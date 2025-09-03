@@ -33,4 +33,5 @@ export interface IRide extends Document {
   pickedUpAt?: Date;
   completedAt?: Date;
   canceledAt?: Date;
+  cancelReason?: string;
 }

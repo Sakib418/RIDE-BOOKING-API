@@ -24,6 +24,7 @@ const rideSchema = new Schema<IRide>({
   pickedUpAt: Date,
   completedAt: Date,
   canceledAt: Date,
+  cancelReason: {type: String},
 },
 
     {
