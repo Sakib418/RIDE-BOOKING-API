@@ -16,11 +16,14 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const app_1 = __importDefault(require("./app"));
 const env_1 = require("./app/config/env");
 const seedSuperAdmin_1 = require("./app/Utils/seedSuperAdmin");
+const rideCleanup_1 = require("./app/jobs/rideCleanup");
 let server;
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield mongoose_1.default.connect(env_1.envVars.DB_URL);
         console.log("Connected to DB");
+        // Start cron job
+        (0, rideCleanup_1.startRideCleanupJob)();
         server = app_1.default.listen(env_1.envVars.PORT, () => {
             console.log(`Server is listening to post ${env_1.envVars.PORT}`);
         });

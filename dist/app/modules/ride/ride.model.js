@@ -23,6 +23,7 @@ const rideSchema = new mongoose_1.Schema({
     pickedUpAt: Date,
     completedAt: Date,
     canceledAt: Date,
+    cancelReason: { type: String },
 }, {
     timestamps: true,
     versionKey: false

@@ -43,5 +43,6 @@ exports.updateRideZodSchema = zod_1.default.object({
     pickedUpAt: zod_1.default.date().optional(),
     completedAt: zod_1.default.date().optional(),
     canceledAt: zod_1.default.date().optional(),
+    cancelReason: zod_1.default.string().optional(),
     fare: zod_1.default.number().positive().optional(),
 });
