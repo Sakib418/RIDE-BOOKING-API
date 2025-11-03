@@ -11,6 +11,9 @@ import { Role } from "../user/user.interface";
 import { calculateDistanceKm } from "../../Utils/calculateDistanceKM";
 import { Driver } from "../driver/driver.model";
 import { DriverApprovalStatus } from "../driver/driver.interfaces";
+import { QueryBuilder } from "../../Utils/QueryBuilder";
+import { rideSearchableFields } from "./ride.constant";
+import mongoose from "mongoose";
 
 const requestRide = async (decodedToken: JwtPayload,payload: Partial<IRide>) => {
     
@@ -118,7 +121,8 @@ if (!ifUserExist) {
    if (isDriverOnRide) {
     throw new AppError(httpStatus.BAD_REQUEST, "Please complete the ongoing ride first...");
     } 
-
+    console.log(ride.status);
+    console.log(allowedTransitions[ride.status].includes(status));
     if (decodedToken.role !== "ADMIN") {
       if (!allowedTransitions[ride.status].includes(status)) {
         throw new AppError(
@@ -136,11 +140,17 @@ if (!ifUserExist) {
     ride.acceptedAt = new Date();
     break;
     
+     case RideStatus.REJECTED:
+    break;
       
     case RideStatus.PICKED_UP:
     ride.pickedUpAt = new Date();
     break;
-   
+     
+    case RideStatus.IN_TRANSIT:
+    
+    break;
+
     case RideStatus.COMPLETED:
     ride.completedAt = new Date();
     break;
@@ -180,39 +190,66 @@ if (!ifUserExist) {
 
 
 
-const getAllRides = async (decodedToken: JwtPayload) => {
+const getAllRides = async (decodedToken: JwtPayload,query: Record<string, string>) => {
     
+  
      const ifUserExist = await User.findById(decodedToken.userId);
      console.log(decodedToken);
       if(ifUserExist?.isActive === "BLOCKED"){
         throw new AppError(httpStatus.BAD_REQUEST, "You are not allowed to check history!!!")
     }
     let rides
+    let queryBuilder
     if (decodedToken.role === Role.RIDER)
     {
-      rides = await Ride.find({rider: decodedToken.userId});
+      queryBuilder =  new QueryBuilder(Ride.find({rider: decodedToken.userId}), query);
     }
     else if(decodedToken.role === Role.DRIVER){
-      rides = await Ride.find({driver: decodedToken.userId});
+      queryBuilder =  new QueryBuilder(Ride.find({driver: decodedToken.userId}), query);
     }
     else
     {
-       rides = await Ride.find();
+       queryBuilder =  new QueryBuilder(Ride.find(), query);
     }
     
+     rides = await queryBuilder
+        .search(rideSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .paginate()
 
-    //const totolRides = await Ride.countDocuments();
+     //const meta = await queryBuilder.getMeta()
+   
+     const [data, meta] = await Promise.all([
+        rides.build(),
+        queryBuilder.getMeta()
+    ])
 
     return {
-        data: rides,
-        // meta:{
-        //     total: totolRides
-        // }
-    };
+        data,
+        meta
+    }
+}
+
+const rideDetails = async (rideId: string) => {
+    if (!mongoose.Types.ObjectId.isValid(rideId)) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Invalid Ride ID");
+  }
+      
+     const ride = await Ride.findById(rideId);
+      if(!ride){
+        throw new AppError(httpStatus.NOT_FOUND, "Ride Not Found")
+      }
+
+    return {
+        data : ride,
+    }
 }
 
 export const RideService = {
     getAllRides,
     requestRide,
-    respondToRide
+    respondToRide,
+    rideDetails
 }

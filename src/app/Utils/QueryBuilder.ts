@@ -26,12 +26,33 @@ export class QueryBuilder<T> {
 
     search(searchableField: string[]): this {
         const searchTerm = this.query.searchTerm || ""
+
         const searchQuery = {
             $or: searchableField.map(field => ({ [field]: { $regex: searchTerm, $options: "i" } }))
         }
         this.modelQuery = this.modelQuery.find(searchQuery)
         return this
     }
+//     search(searchableField: string[]): this {
+//   const searchTerm = this.query.searchTerm || "";
+
+//   // If searchTerm looks like an ObjectId, handle that separately
+//   const isObjectId = /^[0-9a-fA-F]{24}$/.test(searchTerm);
+
+//   const searchConditions = searchableField.map(field => {
+//     if (field === "_id" && isObjectId) {
+//       // Exact match for ObjectId
+//       return { [field]: searchTerm };
+//     } else {
+//       // Use regex for normal string fields
+//       return { [field]: { $regex: searchTerm, $options: "i" } };
+//     }
+//   });
+
+//   this.modelQuery = this.modelQuery.find({ $or: searchConditions });
+
+//   return this;
+// }
 
     sort(): this {
 
@@ -69,6 +90,7 @@ export class QueryBuilder<T> {
 
         const page = Number(this.query.page) || 1
         const limit = Number(this.query.limit) || 10
+
 
         const totalPage = Math.ceil(totalDocuments / limit)
 

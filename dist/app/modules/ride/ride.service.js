@@ -95,6 +95,8 @@ const respondToRide = (rideId, decodedToken, status) => __awaiter(void 0, void 0
         if (isDriverOnRide) {
             throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Please complete the ongoing ride first...");
         }
+        console.log(ride.status);
+        console.log(allowedTransitions[ride.status].includes(status));
         if (decodedToken.role !== "ADMIN") {
             if (!allowedTransitions[ride.status].includes(status)) {
                 throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, `Cannot change ride status from ${ride.status} to ${status}`);
@@ -106,8 +108,12 @@ const respondToRide = (rideId, decodedToken, status) => __awaiter(void 0, void 0
                 ride.driver = decodedToken.userId;
                 ride.acceptedAt = new Date();
                 break;
+            case ride_interface_1.RideStatus.REJECTED:
+                break;
             case ride_interface_1.RideStatus.PICKED_UP:
                 ride.pickedUpAt = new Date();
+                break;
+            case ride_interface_1.RideStatus.IN_TRANSIT:
                 break;
             case ride_interface_1.RideStatus.COMPLETED:
                 ride.completedAt = new Date();

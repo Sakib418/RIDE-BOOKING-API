@@ -103,7 +103,12 @@ const toggleUserStatus = async (userId: string, payload: Partial<IUser>, decoded
     
      return updatedUser
 }
-
+const getMe = async (userId: string) => {
+    const user = await User.findById(userId).select("-password");
+    return {
+        data: user
+    }
+};
 const getAllUsers = async () => {
     const users = await User.find();
     const totolUsers = await User.countDocuments();
@@ -121,5 +126,6 @@ export const UserService = {
     createUser,
     getAllUsers,
     updateUser,
-    toggleUserStatus
-}
+    toggleUserStatus,
+    getMe
+};
