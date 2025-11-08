@@ -21,7 +21,21 @@ const createDriverProfile = catchAsync(async (req: Request, res: Response) => {
         data: result,
     });
 });
-
+const updateDriverProfile = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.params.id; // get user ID from URL
+    const payload = {
+        ...req.body,
+        user: userId, 
+    };
+    console.log(payload);
+    const result = await DriverService.updateDriverProfile(userId ,payload);
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: 'Driver profile created successfully',
+        data: result,
+    });
+});
 const getAllDrivers = catchAsync(async (req: Request, res: Response) => {
 
     const query = req.query
@@ -52,6 +66,7 @@ const approveOrSuspendDriver = catchAsync(async (req: Request, res: Response) =>
 export const setDriverStatus = async (req: Request, res: Response) => {
 
   const decodedToken = req.user;
+  console.log(req.body);
   const { status } = req.body;
   
    const driver = await DriverService.setDriverStatus(decodedToken as JwtPayload, status);
@@ -85,5 +100,6 @@ export const DriverController ={
     getAllDrivers,
     approveOrSuspendDriver,
     setDriverStatus,
-    getEarnings
+    getEarnings,
+    updateDriverProfile
 }

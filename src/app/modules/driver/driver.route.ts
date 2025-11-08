@@ -19,6 +19,11 @@ router.post(
     DriverController.createDriverProfile
 );
 
+router.patch(
+    "/update/:id/vehicle",
+    checkAuth(Role.ADMIN, Role.SUPER_ADMIN,Role.DRIVER),
+    DriverController.updateDriverProfile
+);
 
 
 router.patch(

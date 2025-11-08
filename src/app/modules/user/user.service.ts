@@ -5,6 +5,8 @@ import httpStatus from 'http-status-codes';
 import bcryptjs from "bcryptjs";
 import { envVars } from "../../config/env";
 import { JwtPayload } from "jsonwebtoken";
+import { driversRoutes } from "../driver/driver.route";
+import { Driver } from "../driver/driver.model";
 
 const createUser = async (payload: Partial<IUser>) => {
     const {email,password,...rest} = payload;
@@ -34,6 +36,8 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
         throw new AppError(httpStatus.NOT_FOUND, "User Not Found")
     }
 
+    console.log(payload);
+    
     /**
      * email - can not update
      * name, phone, password address
@@ -43,28 +47,28 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
      * promoting to superadmin - superadmin
      */
 
-    if (payload.role) {
-        if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER) {
-            throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
-        }
+    // if (payload.role) {
+    //     if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER) {
+    //         throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+    //     }
 
-        if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
-            throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
-        }
-    }
+    //     if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
+    //         throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+    //     }
+    // }
 
-    if (payload.isActive || payload.isDeleted || payload.isVerified) {
-        if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER) {
-            throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
-        }
-    }
+    // if (payload.isActive || payload.isDeleted || payload.isVerified) {
+    //     if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER) {
+    //         throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+    //     }
+    // }
 
-    if (payload.password) {
-        payload.password = await bcryptjs.hash(payload.password, envVars.BCRYPT_SALT_ROUND)
-    }
+    // if (payload.password) {
+    //     payload.password = await bcryptjs.hash(payload.password, envVars.BCRYPT_SALT_ROUND)
+    // }
 
     const newUpdatedUser = await User.findByIdAndUpdate(userId, payload, { new: true, runValidators: true })
-
+    
     return newUpdatedUser
 }
 
@@ -103,11 +107,39 @@ const toggleUserStatus = async (userId: string, payload: Partial<IUser>, decoded
     
      return updatedUser
 }
+// const getMe = async (userId: string) => {
+//     const user = await User.findById(userId).select("-password");
+//     return {
+//         data: user
+//     }
+// };
+
 const getMe = async (userId: string) => {
-    const user = await User.findById(userId).select("-password");
-    return {
-        data: user
+  // Step 1: Find the base user (excluding password)
+  const user = await User.findById(userId).select("-password");
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const userObj: any = user.toObject(); // convert mongoose doc to plain object
+
+  // Step 2: If the user is a driver, fetch driver info and attach
+  if (user.role === "DRIVER") {
+    const driver = await Driver.findOne({ user: user._id }).populate("user", "-password");
+    if (driver) {
+      userObj.driver = driver.toObject(); // add driver as nested object
     }
+  }
+
+  // Step 3: Return user (with optional driver)
+  return {
+    data: userObj,
+  };
+};
+
+export default {
+  getMe,
 };
 const getAllUsers = async () => {
     const users = await User.find();

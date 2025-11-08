@@ -232,6 +232,9 @@ const getAllRides = async (decodedToken: JwtPayload,query: Record<string, string
     }
 }
 
+
+
+
 const rideDetails = async (rideId: string) => {
     if (!mongoose.Types.ObjectId.isValid(rideId)) {
     throw new AppError(httpStatus.BAD_REQUEST, "Invalid Ride ID");
@@ -247,9 +250,82 @@ const rideDetails = async (rideId: string) => {
     }
 }
 
+const getAcceptedRides = async (decodedToken: JwtPayload) => {
+  // Check if user exists and is active
+  const ifUserExist = await User.findById(decodedToken.userId);
+  if (!ifUserExist) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  if (ifUserExist.isActive === "BLOCKED") {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "You are not allowed to check history!!!"
+    );
+  }
+
+  // Fetch rides for this driver with statuses in ACCEPTED, PICKED_UP, IN_TRANSIT
+  const rides = await Ride.find({
+    driver: decodedToken.userId,
+    status: { $in: [
+      RideStatus.ACCEPTED,
+      RideStatus.PICKED_UP,
+      RideStatus.IN_TRANSIT
+    ] },
+  });
+
+  return {
+    data: rides,
+  };
+};
+
+const getPendingRides = async (decodedToken: JwtPayload) => {
+  const ifUserExist = await User.findById(decodedToken.userId);
+  if (!ifUserExist) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+  const driver = await Driver.findOne({ user: decodedToken.userId });
+  if (!driver || driver.onlineStatus !== "ONLINE") {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "You must be online to view pending rides."
+    );
+  }
+
+  if (ifUserExist.isActive === "BLOCKED") {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "You are not allowed to check history!!!"
+    );
+  }
+
+  // ✅ Check if the driver already has an ongoing ride
+  const activeRide = await Ride.findOne({
+    driver: decodedToken.userId,
+    status: { $in: [RideStatus.ACCEPTED, RideStatus.PICKED_UP, RideStatus.IN_TRANSIT] },
+  });
+
+  if (activeRide) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "You already have an active ride. Please complete it before accepting a new one."
+    );
+  }
+
+  // ✅ Fetch only requested rides if driver is free
+  const rides = await Ride.find({ status: RideStatus.REQUESTED });
+
+  return {
+    data: rides,
+  };
+};
+
+
 export const RideService = {
     getAllRides,
     requestRide,
     respondToRide,
-    rideDetails
+    rideDetails,
+    getPendingRides,
+    getAcceptedRides
 }

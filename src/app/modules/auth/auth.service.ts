@@ -25,7 +25,7 @@ const resetPassword = async (decodedToken : JwtPayload,newPassword: string,oldPa
      const isOldPasswordMatch = await bcryptjs.compare(oldPassword, user!.password as string);
      
       if(!isOldPasswordMatch){
-        throw new AppError(httpStatus.UNAUTHORIZED, "Old Password does not mathc");
+        throw new AppError(httpStatus.UNAUTHORIZED, "Old Password does not match");
       }
       user!.password = await bcryptjs.hash(newPassword, Number(envVars.BCRYPT_SALT_ROUND));
       

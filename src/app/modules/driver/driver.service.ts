@@ -15,7 +15,23 @@ const createDriverProfile = async (payload: IDriverProfile) => {
 
     return driver;
 };
+const updateDriverProfile = async (userid: string,payload: IDriverProfile) => {
+    
+   const ifUserExist = await User.findById(userid);
+   
+       if (!ifUserExist) {
+           throw new AppError(httpStatus.NOT_FOUND, "User Not Found")
+       }
+     console.log(payload);
+    //const driver = await Driver.findByIdAndUpdate(userid, payload, { new: true, runValidators: true })
+    const driver = await Driver.findOneAndUpdate(
+        { user: userid }, // find driver by user reference
+        { $set: { vehicle: payload } }, // update only vehicle
+        { new: true, runValidators: true }
+    );
 
+    return driver;
+};
 
 
 
@@ -96,5 +112,6 @@ export const DriverService = {
     getAllDrivers,
     approveOrSuspendDriver,
     setDriverStatus,
-    getEarnings
+    getEarnings,
+    updateDriverProfile
 };

@@ -19,10 +19,14 @@ const createUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 })
 
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    
+     console.log("PARAM ID:", req.params.id);
+     console.log("BODY DATA:", req.body);
     const userId = req.params.id;
     const verifiedToken = req.user;
 
     const payload = req.body;
+    console.log(payload);
     const user = await UserService.updateUser(userId, payload, verifiedToken as JwtPayload)
 
     

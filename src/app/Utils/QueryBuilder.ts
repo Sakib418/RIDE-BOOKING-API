@@ -1,4 +1,4 @@
-import { Query } from "mongoose";
+import mongoose, { Query } from "mongoose";
 import { excludeField } from "../constants";
 
 export class QueryBuilder<T> {
@@ -32,6 +32,8 @@ export class QueryBuilder<T> {
         }
         this.modelQuery = this.modelQuery.find(searchQuery)
         return this
+
+
     }
 //     search(searchableField: string[]): this {
 //   const searchTerm = this.query.searchTerm || "";
@@ -86,7 +88,8 @@ export class QueryBuilder<T> {
     }
 
     async getMeta() {
-        const totalDocuments = await this.modelQuery.model.countDocuments()
+        //const totalDocuments = await this.modelQuery.model.countDocuments()
+         const totalDocuments = await this.modelQuery.model.countDocuments(this.modelQuery.getFilter())
 
         const page = Number(this.query.page) || 1
         const limit = Number(this.query.limit) || 10

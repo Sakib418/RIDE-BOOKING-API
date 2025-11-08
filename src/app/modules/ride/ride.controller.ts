@@ -22,7 +22,21 @@ const requestRide = catchAsync(async (req: Request, res: Response, next: NextFun
     data: ride
   })    
 })
+const getAcceptedRides = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    
+  const user  = req.user;
+  //const { pickup, destination } = req.body;
+  
+    
+  const ride = await RideService.getAcceptedRides(user as JwtPayload);
 
+  sendResponse(res,{
+    success: true,
+    statusCode: httpStatus.CREATED,
+    message: "Rides Retrived Successfully",
+    data: ride
+  })    
+})
 
 const respondToRide = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     
@@ -56,7 +70,7 @@ const rideDetails = catchAsync(async (req: Request, res: Response, next: NextFun
   })    
 })
 
-const getAllRides = catchAsync(async(req: Request, res: Response, next: NextFunction) =>{
+const getAllRides = catchAsync(async(req: Request, res: Response) =>{
    const user = req.user as JwtPayload;
   const query = req.query as Record<string, string>;
 
@@ -74,10 +88,33 @@ const getAllRides = catchAsync(async(req: Request, res: Response, next: NextFunc
   })
 }
 )
+const getPendingRide = catchAsync(async(req: Request, res: Response) =>{
+  const user = req.user as JwtPayload;
+  // const query = req.query as Record<string, string>;
+
+  //console.log("Decoded User:", user);
+  //console.log("Query:", query);
+
+
+   const result = await RideService.getPendingRides(user as JwtPayload);
+   sendResponse(res,{
+    success: true,
+    statusCode: httpStatus.CREATED,
+    message: "All Rides Retrived Successfully",
+    data: result.data
+    // meta: result.meta
+  })
+}
+)
+
+
+
 
 export const RideController = {
     getAllRides,
     requestRide,
     respondToRide,
-    rideDetails
+    rideDetails,
+    getPendingRide,
+    getAcceptedRides
 }
