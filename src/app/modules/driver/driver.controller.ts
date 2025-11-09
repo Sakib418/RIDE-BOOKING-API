@@ -50,15 +50,16 @@ const getAllDrivers = catchAsync(async (req: Request, res: Response) => {
 });
 
 const approveOrSuspendDriver = catchAsync(async (req: Request, res: Response) => {
-   
-    const driverId = req.params.id;
+    console.log(req.body,req.params.id);
+    const driverId = req.params.id as string;
+    console.log(driverId);
     const { approvalStatus } = req.body as { approvalStatus: DriverApprovalStatus };
 
     const result = await DriverService.approveOrSuspendDriver(driverId, approvalStatus);
     sendResponse(res, {
         statusCode: 200,
         success: true,
-        message: `Driver has been ${approvalStatus.toLowerCase()} successfully`,
+        message: `Driver has been ${approvalStatus} successfully`,
         data: result,
     });
 });

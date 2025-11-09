@@ -7,6 +7,8 @@ import { envVars } from "../../config/env";
 import { JwtPayload } from "jsonwebtoken";
 import { driversRoutes } from "../driver/driver.route";
 import { Driver } from "../driver/driver.model";
+import { QueryBuilder } from "../../Utils/QueryBuilder";
+import { rideSearchableFields } from "./user.constant";
 
 const createUser = async (payload: Partial<IUser>) => {
     const {email,password,...rest} = payload;
@@ -138,20 +140,53 @@ const getMe = async (userId: string) => {
   };
 };
 
-export default {
-  getMe,
-};
-const getAllUsers = async () => {
-    const users = await User.find();
+
+const getAllUsers = async (query: Record<string, string>) => {
+    //const users = await User.find();
+    let users
+    let queryBuilder
     const totolUsers = await User.countDocuments();
+    queryBuilder =  new QueryBuilder(User.find(), query);
+    
 
-    return {
-        data: users,
-        meta:{
-            total: totolUsers
+     users = await queryBuilder
+            .search(rideSearchableFields)
+            .filter()
+            .sort()
+            .fields()
+            .paginate()
+    
+         //const meta = await queryBuilder.getMeta()
+       
+         const [data, meta] = await Promise.all([
+            users.build(),
+            queryBuilder.getMeta()
+        ])
+        // ✅ Step 2: For each user, if role is DRIVER, attach driver info
+  const usersWithDriverInfo = await Promise.all(
+    data.map(async (user) => {
+      const userObj = user.toObject()  as any;
+
+      if (user.role === "DRIVER") {
+        const driver = await Driver.findOne({ user: user._id }).populate(
+          "user",
+          "-password"
+        );
+
+        if (driver) {
+          userObj.driver = driver.toObject(); // attach nested driver info
         }
-    };
+      }
 
+      return userObj;
+    })
+  );
+      
+
+     return {
+        data : usersWithDriverInfo,
+        meta
+    }
 }
 
 export const UserService = {

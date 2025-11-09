@@ -1,0 +1,1 @@
+export const rideSearchableFields = ["name", "email", "role"];

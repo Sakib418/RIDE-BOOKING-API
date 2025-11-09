@@ -29,7 +29,6 @@ router.patch(
 router.patch(
   "/approve/:id",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  validateRequest(updateDriverApprovalZodSchema),
   DriverController.approveOrSuspendDriver
 );
 

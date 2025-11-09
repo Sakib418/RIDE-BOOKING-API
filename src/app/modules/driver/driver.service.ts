@@ -58,18 +58,57 @@ const getAllDrivers = async (query: Record<string, string>) => {
     }
 };
 
-const approveOrSuspendDriver = async (driverId: string, approvalStatus: DriverApprovalStatus) => {
+// const approveOrSuspendDriver = async (userid: string, approvalStatus: DriverApprovalStatus) => {
 
-    const existingDriver = await Driver.findById(driverId);
+//     const existingDriver = await Driver.findOne({ user: userid });
+//     //console.log(existingDriver,approvalStatus);
+//     if (!existingDriver) {
+//         throw new Error("Driver not found.");
+//     }
+//     const driverId= existingDriver._id;
+    
+//     //  const newStatus =
+//     //       ifUserExist.isActive === IsActive.ACTIVE ? IsActive.BLOCKED : IsActive.ACTIVE;
+//           const newStatus =
+//           approvalStatus === DriverApprovalStatus.APPROVED ? DriverApprovalStatus.SUSPENDED : DriverApprovalStatus.APPROVED;
+        
+   
 
-    if (!existingDriver) {
-        throw new Error("Driver not found.");
-    }
+//     console.log(driverId);
+//     //const updatedDriver = await Driver.findByIdAndUpdate(existingDriver._id, {approvalStatus}, { new: true });
+//     const updatedDriver = await Driver.findByIdAndUpdate(
+//     driverId,
+//     { approvalStatus: newStatus },
+//     { new: true, select: "-password"}
+//   );
 
-  
-    const updatedDriver = await Driver.findByIdAndUpdate(driverId, {approvalStatus}, { new: true });
 
-    return updatedDriver;
+//     return updatedDriver;
+// };
+
+const approveOrSuspendDriver = async (
+  userId: string,
+  approvalStatus: DriverApprovalStatus
+) => {
+  const existingDriver = await Driver.findOne({ user: userId });
+  if (!existingDriver) {
+    throw new Error("Driver not found.");
+  }
+
+  const driverId = existingDriver._id;
+   const currentStatus = existingDriver.approvalStatus;
+  const newStatus =
+    currentStatus === DriverApprovalStatus.APPROVED
+      ? DriverApprovalStatus.SUSPENDED
+      : DriverApprovalStatus.APPROVED;
+
+  const updatedDriver = await Driver.findByIdAndUpdate(
+    driverId,
+    { $set: { approvalStatus: newStatus } },
+    { new: true, runValidators: true }
+  );
+
+  return updatedDriver;
 };
 
 export const setDriverStatus = async (decodedToken: JwtPayload, status: DriverOnlineStatus) => {

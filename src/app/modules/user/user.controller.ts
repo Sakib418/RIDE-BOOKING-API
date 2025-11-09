@@ -71,8 +71,9 @@ const toggleUserStatus = catchAsync(async (req: Request, res: Response, next: Ne
     })
 })
 const getAllUsers = catchAsync(async(req: Request, res: Response, next: NextFunction) =>{
-   const result = await UserService.getAllUsers();
    
+   const query = req.query as Record<string, string>;
+   const result = await UserService.getAllUsers(query);
    sendResponse(res,{
     success: true,
     statusCode: httpStatus.CREATED,
