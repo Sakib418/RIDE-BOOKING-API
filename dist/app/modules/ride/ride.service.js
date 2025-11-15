@@ -22,6 +22,9 @@ const user_interface_1 = require("../user/user.interface");
 const calculateDistanceKM_1 = require("../../Utils/calculateDistanceKM");
 const driver_model_1 = require("../driver/driver.model");
 const driver_interfaces_1 = require("../driver/driver.interfaces");
+const QueryBuilder_1 = require("../../Utils/QueryBuilder");
+const ride_constant_1 = require("./ride.constant");
+const mongoose_1 = __importDefault(require("mongoose"));
 const requestRide = (decodedToken, payload) => __awaiter(void 0, void 0, void 0, function* () {
     const { pickup, destination } = payload;
     if (!pickup || !destination) {
@@ -148,32 +151,104 @@ const respondToRide = (rideId, decodedToken, status) => __awaiter(void 0, void 0
     return ride;
 });
 exports.respondToRide = respondToRide;
-const getAllRides = (decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllRides = (decodedToken, query) => __awaiter(void 0, void 0, void 0, function* () {
     const ifUserExist = yield user_model_1.User.findById(decodedToken.userId);
     console.log(decodedToken);
     if ((ifUserExist === null || ifUserExist === void 0 ? void 0 : ifUserExist.isActive) === "BLOCKED") {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "You are not allowed to check history!!!");
     }
     let rides;
+    let queryBuilder;
     if (decodedToken.role === user_interface_1.Role.RIDER) {
-        rides = yield ride_model_1.Ride.find({ rider: decodedToken.userId });
+        queryBuilder = new QueryBuilder_1.QueryBuilder(ride_model_1.Ride.find({ rider: decodedToken.userId }), query);
     }
     else if (decodedToken.role === user_interface_1.Role.DRIVER) {
-        rides = yield ride_model_1.Ride.find({ driver: decodedToken.userId });
+        queryBuilder = new QueryBuilder_1.QueryBuilder(ride_model_1.Ride.find({ driver: decodedToken.userId }), query);
     }
     else {
-        rides = yield ride_model_1.Ride.find();
+        queryBuilder = new QueryBuilder_1.QueryBuilder(ride_model_1.Ride.find(), query);
     }
-    //const totolRides = await Ride.countDocuments();
+    rides = yield queryBuilder
+        .search(ride_constant_1.rideSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .paginate();
+    //const meta = await queryBuilder.getMeta()
+    const [data, meta] = yield Promise.all([
+        rides.build(),
+        queryBuilder.getMeta()
+    ]);
+    return {
+        data,
+        meta
+    };
+});
+const rideDetails = (rideId) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!mongoose_1.default.Types.ObjectId.isValid(rideId)) {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "Invalid Ride ID");
+    }
+    const ride = yield ride_model_1.Ride.findById(rideId);
+    if (!ride) {
+        throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "Ride Not Found");
+    }
+    return {
+        data: ride,
+    };
+});
+const getAcceptedRides = (decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
+    // Check if user exists and is active
+    const ifUserExist = yield user_model_1.User.findById(decodedToken.userId);
+    if (!ifUserExist) {
+        throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "User not found");
+    }
+    if (ifUserExist.isActive === "BLOCKED") {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "You are not allowed to check history!!!");
+    }
+    // Fetch rides for this driver with statuses in ACCEPTED, PICKED_UP, IN_TRANSIT
+    const rides = yield ride_model_1.Ride.find({
+        driver: decodedToken.userId,
+        status: { $in: [
+                ride_interface_1.RideStatus.ACCEPTED,
+                ride_interface_1.RideStatus.PICKED_UP,
+                ride_interface_1.RideStatus.IN_TRANSIT
+            ] },
+    });
     return {
         data: rides,
-        // meta:{
-        //     total: totolRides
-        // }
+    };
+});
+const getPendingRides = (decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
+    const ifUserExist = yield user_model_1.User.findById(decodedToken.userId);
+    if (!ifUserExist) {
+        throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "User not found");
+    }
+    const driver = yield driver_model_1.Driver.findOne({ user: decodedToken.userId });
+    if (!driver || driver.onlineStatus !== "ONLINE") {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "You must be online to view pending rides.");
+    }
+    if (ifUserExist.isActive === "BLOCKED") {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "You are not allowed to check history!!!");
+    }
+    // ✅ Check if the driver already has an ongoing ride
+    const activeRide = yield ride_model_1.Ride.findOne({
+        driver: decodedToken.userId,
+        status: { $in: [ride_interface_1.RideStatus.ACCEPTED, ride_interface_1.RideStatus.PICKED_UP, ride_interface_1.RideStatus.IN_TRANSIT] },
+    });
+    if (activeRide) {
+        throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, "You already have an active ride. Please complete it before accepting a new one.");
+    }
+    // ✅ Fetch only requested rides if driver is free
+    const rides = yield ride_model_1.Ride.find({ status: ride_interface_1.RideStatus.REQUESTED });
+    return {
+        data: rides,
     };
 });
 exports.RideService = {
     getAllRides,
     requestRide,
-    respondToRide: exports.respondToRide
+    respondToRide: exports.respondToRide,
+    rideDetails,
+    getPendingRides,
+    getAcceptedRides
 };

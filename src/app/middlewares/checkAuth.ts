@@ -39,7 +39,7 @@ export const checkAuth = (...authRoles: string[]) => async (req: Request, res: R
         next()
 
     } catch (error) {
-        console.log("jwt error", error);
+     
         next(error)
     }
 }

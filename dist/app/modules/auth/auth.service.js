@@ -29,7 +29,7 @@ const resetPassword = (decodedToken, newPassword, oldPassword) => __awaiter(void
     const user = yield user_model_1.User.findById(decodedToken.userId);
     const isOldPasswordMatch = yield bcryptjs_1.default.compare(oldPassword, user.password);
     if (!isOldPasswordMatch) {
-        throw new AppError_1.default(http_status_codes_1.default.UNAUTHORIZED, "Old Password does not mathc");
+        throw new AppError_1.default(http_status_codes_1.default.UNAUTHORIZED, "Old Password does not match");
     }
     user.password = yield bcryptjs_1.default.hash(newPassword, Number(env_1.envVars.BCRYPT_SALT_ROUND));
     user === null || user === void 0 ? void 0 : user.save();

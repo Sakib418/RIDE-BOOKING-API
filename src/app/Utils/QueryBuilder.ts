@@ -1,4 +1,4 @@
-import mongoose, { Query } from "mongoose";
+import  { Query } from "mongoose";
 import { excludeField } from "../constants";
 
 export class QueryBuilder<T> {

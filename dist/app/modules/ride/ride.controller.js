@@ -28,6 +28,17 @@ const requestRide = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(v
         data: ride
     });
 }));
+const getAcceptedRides = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    //const { pickup, destination } = req.body;
+    const ride = yield ride_service_1.RideService.getAcceptedRides(user);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.CREATED,
+        message: "Rides Retrived Successfully",
+        data: ride
+    });
+}));
 const respondToRide = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const rideId = req.params.id;
     const { status } = req.body;
@@ -40,20 +51,49 @@ const respondToRide = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter
         data: ride
     });
 }));
-const getAllRides = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const rideDetails = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const rideId = req.params.id;
+    const ride = yield ride_service_1.RideService.rideDetails(rideId);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.CREATED,
+        message: `Rides Retrived Successfully`,
+        data: ride
+    });
+}));
+const getAllRides = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    const result = yield ride_service_1.RideService.getAllRides(user);
-    console.log(req.user);
+    const query = req.query;
+    //console.log("Decoded User:", user);
+    //console.log("Query:", query);
+    const result = yield ride_service_1.RideService.getAllRides(user, query);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.CREATED,
+        message: "All Rides Retrived Successfully",
+        data: result.data,
+        meta: result.meta
+    });
+}));
+const getPendingRide = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    // const query = req.query as Record<string, string>;
+    //console.log("Decoded User:", user);
+    //console.log("Query:", query);
+    const result = yield ride_service_1.RideService.getPendingRides(user);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: http_status_codes_1.default.CREATED,
         message: "All Rides Retrived Successfully",
         data: result.data
-        //meta: result.meta
+        // meta: result.meta
     });
 }));
 exports.RideController = {
     getAllRides,
     requestRide,
-    respondToRide
+    respondToRide,
+    rideDetails,
+    getPendingRide,
+    getAcceptedRides
 };

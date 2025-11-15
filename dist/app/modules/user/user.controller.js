@@ -27,15 +27,33 @@ const createUser = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(vo
     });
 }));
 const updateUser = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("PARAM ID:", req.params.id);
+    console.log("BODY DATA:", req.body);
     const userId = req.params.id;
     const verifiedToken = req.user;
     const payload = req.body;
+    console.log(payload);
     const user = yield user_service_1.UserService.updateUser(userId, payload, verifiedToken);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: http_status_codes_1.default.CREATED,
         message: "User Updated Successfully",
         data: user,
+    });
+}));
+const getMe = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const decodedToken = req.user;
+    const result = yield user_service_1.UserService.getMe(decodedToken.userId);
+    // res.status(httpStatus.OK).json({
+    //     success: true,
+    //     message: "All Users Retrieved Successfully",
+    //     data: users
+    // })
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.CREATED,
+        message: "Your profile Retrieved Successfully",
+        data: result.data
     });
 }));
 const toggleUserStatus = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -51,7 +69,8 @@ const toggleUserStatus = (0, catchAsync_1.catchAsync)((req, res, next) => __awai
     });
 }));
 const getAllUsers = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.UserService.getAllUsers();
+    const query = req.query;
+    const result = yield user_service_1.UserService.getAllUsers(query);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: http_status_codes_1.default.CREATED,
@@ -64,5 +83,6 @@ exports.UserControllers = {
     createUser,
     getAllUsers,
     updateUser,
-    toggleUserStatus
+    toggleUserStatus,
+    getMe
 };

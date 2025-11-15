@@ -30,6 +30,9 @@ const user_model_1 = require("./user.model");
 const http_status_codes_1 = __importDefault(require("http-status-codes"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const env_1 = require("../../config/env");
+const driver_model_1 = require("../driver/driver.model");
+const QueryBuilder_1 = require("../../Utils/QueryBuilder");
+const user_constant_1 = require("./user.constant");
 const createUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = payload, rest = __rest(payload, ["email", "password"]);
     const ifUserExist = yield user_model_1.User.findOne({ email });
@@ -46,6 +49,7 @@ const updateUser = (userId, payload, decodedToken) => __awaiter(void 0, void 0, 
     if (!ifUserExist) {
         throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "User Not Found");
     }
+    console.log(payload);
     /**
      * email - can not update
      * name, phone, password address
@@ -54,22 +58,22 @@ const updateUser = (userId, payload, decodedToken) => __awaiter(void 0, void 0, 
      *
      * promoting to superadmin - superadmin
      */
-    if (payload.role) {
-        if (decodedToken.role === user_interface_1.Role.USER || decodedToken.role === user_interface_1.Role.RIDER) {
-            throw new AppError_1.default(http_status_codes_1.default.FORBIDDEN, "You are not authorized");
-        }
-        if (payload.role === user_interface_1.Role.SUPER_ADMIN && decodedToken.role === user_interface_1.Role.ADMIN) {
-            throw new AppError_1.default(http_status_codes_1.default.FORBIDDEN, "You are not authorized");
-        }
-    }
-    if (payload.isActive || payload.isDeleted || payload.isVerified) {
-        if (decodedToken.role === user_interface_1.Role.USER || decodedToken.role === user_interface_1.Role.RIDER) {
-            throw new AppError_1.default(http_status_codes_1.default.FORBIDDEN, "You are not authorized");
-        }
-    }
-    if (payload.password) {
-        payload.password = yield bcryptjs_1.default.hash(payload.password, env_1.envVars.BCRYPT_SALT_ROUND);
-    }
+    // if (payload.role) {
+    //     if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER) {
+    //         throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+    //     }
+    //     if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
+    //         throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+    //     }
+    // }
+    // if (payload.isActive || payload.isDeleted || payload.isVerified) {
+    //     if (decodedToken.role === Role.USER || decodedToken.role === Role.RIDER) {
+    //         throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+    //     }
+    // }
+    // if (payload.password) {
+    //     payload.password = await bcryptjs.hash(payload.password, envVars.BCRYPT_SALT_ROUND)
+    // }
     const newUpdatedUser = yield user_model_1.User.findByIdAndUpdate(userId, payload, { new: true, runValidators: true });
     return newUpdatedUser;
 });
@@ -95,19 +99,68 @@ const toggleUserStatus = (userId, payload, decodedToken) => __awaiter(void 0, vo
     const updatedUser = yield user_model_1.User.findByIdAndUpdate(userId, { isActive: newStatus }, { new: true, select: "-password" });
     return updatedUser;
 });
-const getAllUsers = () => __awaiter(void 0, void 0, void 0, function* () {
-    const users = yield user_model_1.User.find();
-    const totolUsers = yield user_model_1.User.countDocuments();
-    return {
-        data: users,
-        meta: {
-            total: totolUsers
+// const getMe = async (userId: string) => {
+//     const user = await User.findById(userId).select("-password");
+//     return {
+//         data: user
+//     }
+// };
+const getMe = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    // Step 1: Find the base user (excluding password)
+    const user = yield user_model_1.User.findById(userId).select("-password");
+    if (!user) {
+        throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, "User not found");
+    }
+    const userObj = user.toObject(); // convert mongoose doc to plain object
+    // Step 2: If the user is a driver, fetch driver info and attach
+    if (user.role === "DRIVER") {
+        const driver = yield driver_model_1.Driver.findOne({ user: user._id }).populate("user", "-password");
+        if (driver) {
+            userObj.driver = driver.toObject(); // add driver as nested object
         }
+    }
+    // Step 3: Return user (with optional driver)
+    return {
+        data: userObj,
+    };
+});
+const getAllUsers = (query) => __awaiter(void 0, void 0, void 0, function* () {
+    //const users = await User.find();
+    let users;
+    let queryBuilder;
+    const totolUsers = yield user_model_1.User.countDocuments();
+    queryBuilder = new QueryBuilder_1.QueryBuilder(user_model_1.User.find(), query);
+    users = yield queryBuilder
+        .search(user_constant_1.rideSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .paginate();
+    //const meta = await queryBuilder.getMeta()
+    const [data, meta] = yield Promise.all([
+        users.build(),
+        queryBuilder.getMeta()
+    ]);
+    // ✅ Step 2: For each user, if role is DRIVER, attach driver info
+    const usersWithDriverInfo = yield Promise.all(data.map((user) => __awaiter(void 0, void 0, void 0, function* () {
+        const userObj = user.toObject();
+        if (user.role === "DRIVER") {
+            const driver = yield driver_model_1.Driver.findOne({ user: user._id }).populate("user", "-password");
+            if (driver) {
+                userObj.driver = driver.toObject(); // attach nested driver info
+            }
+        }
+        return userObj;
+    })));
+    return {
+        data: usersWithDriverInfo,
+        meta
     };
 });
 exports.UserService = {
     createUser,
     getAllUsers,
     updateUser,
-    toggleUserStatus
+    toggleUserStatus,
+    getMe
 };

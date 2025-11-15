@@ -21,7 +21,7 @@ const AppError_1 = __importDefault(require("../errorHandlers/AppError"));
 const jwt_1 = require("../Utils/jwt");
 const checkAuth = (...authRoles) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const accessToken = req.headers.authorization;
+        const accessToken = req.headers.authorization || req.cookies.accessToken;
         if (!accessToken) {
             throw new AppError_1.default(403, "No Token Recieved");
         }
@@ -43,7 +43,6 @@ const checkAuth = (...authRoles) => (req, res, next) => __awaiter(void 0, void 0
         next();
     }
     catch (error) {
-        console.log("jwt error", error);
         next(error);
     }
 });

@@ -24,6 +24,18 @@ const createDriverProfile = (0, catchAsync_1.catchAsync)((req, res) => __awaiter
         data: result,
     });
 }));
+const updateDriverProfile = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.id; // get user ID from URL
+    const payload = Object.assign(Object.assign({}, req.body), { user: userId });
+    console.log(payload);
+    const result = yield driver_service_1.DriverService.updateDriverProfile(userId, payload);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 201,
+        success: true,
+        message: 'Driver profile created successfully',
+        data: result,
+    });
+}));
 const getAllDrivers = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const query = req.query;
     const result = yield driver_service_1.DriverService.getAllDrivers(query);
@@ -36,18 +48,21 @@ const getAllDrivers = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 
     });
 }));
 const approveOrSuspendDriver = (0, catchAsync_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(req.body, req.params.id);
     const driverId = req.params.id;
+    console.log(driverId);
     const { approvalStatus } = req.body;
     const result = yield driver_service_1.DriverService.approveOrSuspendDriver(driverId, approvalStatus);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: 200,
         success: true,
-        message: `Driver has been ${approvalStatus.toLowerCase()} successfully`,
+        message: `Driver has been ${approvalStatus} successfully`,
         data: result,
     });
 }));
 const setDriverStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const decodedToken = req.user;
+    console.log(req.body);
     const { status } = req.body;
     const driver = yield driver_service_1.DriverService.setDriverStatus(decodedToken, status);
     (0, sendResponse_1.sendResponse)(res, {
@@ -75,5 +90,6 @@ exports.DriverController = {
     getAllDrivers,
     approveOrSuspendDriver,
     setDriverStatus: exports.setDriverStatus,
-    getEarnings: exports.getEarnings
+    getEarnings: exports.getEarnings,
+    updateDriverProfile
 };
